@@ -38,6 +38,46 @@ export function toNumber(value: string | number): number {
   return parsed;
 }
 
+const DECIMAL_PATTERN = /^\d+(\.\d+)?$/;
+
+/** Amount typed by a user: non-negative, at most 2 decimal places. */
+export function isDecimalAmount(value: string): boolean {
+  return /^\d+(\.\d{1,2})?$/.test(value);
+}
+
+/**
+ * Compares two non-negative decimal strings exactly (no floats).
+ * Returns -1, 0 or 1.
+ */
+export function compareDecimals(a: string, b: string): number {
+  if (!DECIMAL_PATTERN.test(a) || !DECIMAL_PATTERN.test(b)) {
+    throw new Error(`Expected decimal strings, received ${JSON.stringify([a, b])}`);
+  }
+
+  const [aInt, aFrac = ''] = a.split('.');
+  const [bInt, bFrac = ''] = b.split('.');
+  const width = Math.max(aFrac.length, bFrac.length);
+  const x = BigInt(aInt + aFrac.padEnd(width, '0'));
+  const y = BigInt(bInt + bFrac.padEnd(width, '0'));
+
+  if (x === y) {
+    return 0;
+  }
+  return x < y ? -1 : 1;
+}
+
+/**
+ * Like `compareDecimals`, but returns null for malformed input instead of throwing.
+ * Use it in render paths where the server is the source of truth for odd values.
+ */
+export function tryCompareDecimals(a: string, b: string): number | null {
+  try {
+    return compareDecimals(a, b);
+  } catch {
+    return null;
+  }
+}
+
 export function formatMoney(value: string | number): string {
   return currency.format(toNumber(value));
 }

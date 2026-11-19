@@ -429,6 +429,48 @@ td.num {
   line-height: 16px;
 }
 
+/* Long counterparty names get an ellipsis instead of widening the table. */
+td.cell-clip {
+  max-width: 190px;
+}
+
+.cell-clip .cell {
+  min-width: 0;
+}
+
+.cell-clip .title,
+.cell-clip .sub {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Fallback when the table is still wider than the viewport: scroll the panel
+   instead of clipping the last column (the Buy button). */
+.panel-scroll {
+  overflow-x: auto;
+}
+
+/* Keep the action column (Buy) pinned to the right edge while the panel
+   scrolls, so it is visible without scrolling or zooming out. */
+th.col-action,
+td.col-action {
+  position: sticky;
+  right: 0;
+  z-index: 1;
+  background: var(--white);
+  box-shadow: -1px 0 0 var(--gray-150);
+}
+
+thead th.col-action {
+  background: var(--gray-50);
+}
+
+tbody tr:hover td.col-action {
+  background: var(--gray-50);
+}
+
 .yield {
   font-size: 15px;
   font-weight: var(--fw-demibold);
@@ -494,4 +536,127 @@ td.num {
   border-radius: var(--radius);
   background: var(--danger-bg);
   color: var(--danger-text);
+}
+
+/* ---------- Buttons ---------- */
+
+.button {
+  height: 36px;
+  padding: 0 16px;
+  font: inherit;
+  font-weight: var(--fw-medium);
+  color: var(--gray-650);
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.button:hover:not(:disabled) {
+  border-color: var(--gray-300);
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--brand);
+}
+
+.button-primary {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: var(--white);
+  font-weight: var(--fw-demibold);
+}
+
+.button-primary:hover:not(:disabled) {
+  border-color: var(--brand);
+  opacity: 0.9;
+}
+
+/* ---------- Dialog ---------- */
+
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(0, 29, 61, 0.4);
+}
+
+.dialog {
+  width: min(480px, 100%);
+}
+
+.dialog-body {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 18px;
+}
+
+.dialog-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 16px;
+  margin: 0;
+}
+
+.dialog-summary dt {
+  font-size: 11px;
+  line-height: 14px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: var(--fw-demibold);
+  color: var(--gray-400);
+}
+
+.dialog-summary dd {
+  margin: 2px 0 0;
+  font-weight: var(--fw-demibold);
+}
+
+.dialog-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.amount-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.amount-row input {
+  flex: 1;
+  min-width: 0;
+}
+
+.field input[aria-invalid="true"] {
+  border-color: var(--danger);
+}
+
+.field-error {
+  margin: 0;
+  color: var(--danger-text);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.dialog-error {
+  margin: 0;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
 }
