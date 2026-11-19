@@ -46,6 +46,7 @@ model Listing {
   status          ListingStatus @default(OPEN)
   originatedAt    DateTime
   createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @default(now()) @updatedAt
 
   participations Participation[]
 
@@ -54,6 +55,8 @@ model Listing {
 }
 
 /// A slice of a listing bought by a credit union.
+/// Immutable by convention (spec section 7): the application never updates or
+/// deletes a Participation. A correction is a new row, not an edit.
 model Participation {
   id          String      @id @default(cuid())
   listing     Listing     @relation(fields: [listingId], references: [id])
@@ -61,7 +64,16 @@ model Participation {
   buyerCu     CreditUnion @relation(fields: [buyerCuId], references: [id])
   buyerCuId   String
   amount      Decimal     @db.Decimal(14, 2)
+  /// Snapshot of the listing's yield and term at purchase time (spec section 7, option 2).
+  yieldRate   Decimal     @db.Decimal(6, 3)
+  termMonths  Int
   purchasedAt DateTime    @default(now())
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @default(now()) @updatedAt
+  /// Client-generated key for the purchase attempt (see 3.4 of the spec).
+  idempotencyKey String
 
+  @@unique([buyerCuId, idempotencyKey])
   @@index([buyerCuId])
+  @@index([listingId])
 }

@@ -101,12 +101,23 @@ async function main() {
   }));
   await prisma.listing.createMany({ data: listingRows });
 
+  // Snapshot of the listing's terms, as the purchase endpoint would store them.
+  const listingById = new Map(listings.map((listing) => [listing.id, listing]));
   await prisma.participation.createMany({
-    data: participations.map((p) => ({
-      ...p,
-      amount: money(p.amount),
-      purchasedAt: new Date(p.purchasedAt),
-    })),
+    data: participations.map((p) => {
+      const listing = listingById.get(p.listingId);
+      if (!listing) {
+        throw new Error(`Participation ${p.id} references unknown listing ${p.listingId}`);
+      }
+      return {
+        ...p,
+        amount: money(p.amount),
+        yieldRate: listing.yieldRate.toFixed(3),
+        termMonths: listing.termMonths,
+        purchasedAt: new Date(p.purchasedAt),
+        idempotencyKey: `seed:${p.id}`,
+      };
+    }),
   });
 
   console.log(
