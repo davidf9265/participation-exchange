@@ -1,0 +1,67 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+  runtime      = "nodejs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum RiskGrade {
+  A
+  B
+  C
+  D
+}
+
+enum ListingStatus {
+  OPEN
+  FUNDED
+}
+
+model CreditUnion {
+  id            String @id
+  name          String
+  charterNumber String @unique
+  state         String
+
+  listings       Listing[]
+  participations Participation[]
+}
+
+/// A loan participation offered for sale by a credit union.
+model Listing {
+  id              String        @id @default(cuid())
+  reference       String        @unique
+  sellerCu        CreditUnion   @relation(fields: [sellerCuId], references: [id])
+  sellerCuId      String
+  loanType        String
+  principalAmount Decimal       @db.Decimal(14, 2)
+  remainingAmount Decimal       @db.Decimal(14, 2)
+  yieldRate       Decimal       @db.Decimal(6, 3)
+  termMonths      Int
+  riskGrade       RiskGrade
+  status          ListingStatus @default(OPEN)
+  originatedAt    DateTime
+  createdAt       DateTime      @default(now())
+
+  participations Participation[]
+
+  @@index([riskGrade])
+  @@index([status])
+}
+
+/// A slice of a listing bought by a credit union.
+model Participation {
+  id          String      @id @default(cuid())
+  listing     Listing     @relation(fields: [listingId], references: [id])
+  listingId   String
+  buyerCu     CreditUnion @relation(fields: [buyerCuId], references: [id])
+  buyerCuId   String
+  amount      Decimal     @db.Decimal(14, 2)
+  purchasedAt DateTime    @default(now())
+
+  @@index([buyerCuId])
+}

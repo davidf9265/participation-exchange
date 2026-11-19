@@ -1,0 +1,7 @@
+.env
+node_modules/
+api/dist/
+api/src/generated/
+web/.next/
+*.tsbuildinfo
+.DS_Store
